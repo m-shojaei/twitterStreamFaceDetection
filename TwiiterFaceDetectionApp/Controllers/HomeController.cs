@@ -83,7 +83,7 @@ namespace TwiiterFaceDetectionApp.Controllers
             {
                 res.Reverse();
                 var aa = JsonConvert.SerializeObject(res.Take(10));
-                _HubManager.InvokeAsync("showNewDetectedImages", aa);
+                await _HubManager.InvokeAsync("showNewDetectedImages", aa);
             }
         }
 
