@@ -1,0 +1,138 @@
+﻿@model IEnumerable<TwittImageViewModel>
+<br />
+<br />
+<br />
+
+@using (Html.BeginForm(FormMethod.Post))
+{
+    <input placeholder=" enter keyword" name="track" type="text" width="500" required />
+
+    <button type="submit">start</button>
+}
+
+@if (Model != null)
+{
+    <input type="hidden" id="track" value="@ViewData["track"]"/>
+    <br />
+    <p class="breadcrumb">Showing the result for : @ViewData["track"]</p>
+
+    <div class="avgWrapper">
+        <p>
+            Tweets average per hour: <span id="totalAvg">0</span>
+        </p>
+        <p>
+            Detected males average per hour: <span id="malesAvg">0</span>
+        </p>
+        <p>
+            Detected females average per hour: <span id="femalesAvg">0</span>
+        </p>
+    </div>
+
+    <div class="imagesWrapper">
+
+        @if(Model.Count() == 0)
+        {
+            <div class="imagesW8">
+                <p>Waiting for Images ...</p>
+            </div>
+        }
+       
+
+        @foreach (var item in Model)
+        {
+            <div class="item">
+                <div class="tweetImage" style="background-image:url(@item.Url)">
+                </div>
+
+                <div class="genderCount">
+                    <span class="gender">
+                        male:  @item.MaleCount
+                    </span>
+                    <br />
+                    <span class="gender">
+                        female:  @item.FemaleCount
+                    </span>
+                </div>
+            </div>
+
+        }
+
+    </div>
+}
+
+<script>
+
+        var transportType = signalR.TransportType.WebSockets;
+        //can also be ServerSentEvents or LongPolling
+        var logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
+        var chatHub = new signalR.HttpConnection(`http://${document.location.host}/chat`, { transport: transportType, logger: logger });
+        var chatConnection = new signalR.HubConnection(chatHub, logger);
+
+
+       chatConnection.start().catch(err => {
+           console.log('connection error');
+       });
+
+
+        chatConnection.on('showNewDetectedImages', (images) => {
+            $('.imagesW8').hide();
+            var imagesJson = $.parseJSON(images);
+            console.log(imagesJson);
+
+            if (imagesJson[0].Track != $('#track').val())
+                return;
+
+            for (var i = 0; i < imagesJson.length; i++) {
+                $(".imagesWrapper").prepend(
+                    '<div class="item">' +
+                    '<div class="tweetImage" style="background-image:url(' + imagesJson[i].Url + ')">' +
+                    '</div>' +
+
+                    '<div class="genderCount">' +
+                    '<span class="gender">' +
+                    'male:' + imagesJson[i].MaleCount +
+                    '</span>' +
+                    '<br />' +
+                    '<span class="gender">' +
+                    'female:' + imagesJson[i].FemaleCount +
+                    '</span>' +
+                    '</div>' +
+                    '</div>');
+            }
+        });
+
+        checkForDataAverage();
+
+        function checkForDataAverage() {
+                setTimeout(checkForDataAverage, 10000);
+
+                $.ajax({
+                    url: '@Url.Action("RrunningAverage", "Home")',
+                    type: "GET",
+                    cache: false,
+                    success: function (result) {
+                        if (result.track != $('#track').val())
+                            return;
+
+                        animateToNewValue('#totalAvg', result.totalTweetAverage);
+                        animateToNewValue('#malesAvg', result.malesAverage);
+                        animateToNewValue('#femalesAvg', result.femalesAverage);
+                    }
+
+                });
+            }
+
+        function animateToNewValue(el, value) {
+                var element = $(el).text();
+
+                jQuery({ someValue: parseInt(element) }).animate({ someValue: value }, {
+                    duration: 3000,
+                    easing: 'swing',
+                    step: function () {
+                        $(el).text(Math.ceil(this.someValue));
+                    }
+                });
+            }
+
+
+</script>

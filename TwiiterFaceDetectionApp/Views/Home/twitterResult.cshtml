@@ -1,0 +1,153 @@
+﻿
+@model IEnumerable<TwittImageViewModel>
+
+<style>
+    .avgWrapper {
+        font-family: 'Agency FB';
+        font-size:20px;
+    }
+
+    .item {
+        width: 202px;
+        height: 270px;
+        display: inline-block;
+        background-color: #292828;
+        color: white;
+        text-align: center;
+        margin-top: 25px;
+        box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2), 0 4px 20px 0 rgba(0,0,0,0.19);
+        font-family: 'Agency FB';
+        padding: 1px;
+    }
+
+    .genderCount {
+        margin-top: 5px;
+        font-size: 15px;
+    }
+
+    .tweetImage {
+        width: 200px;
+        height: 200px;
+        background-position:center;
+        background-size:cover;
+    }
+</style>
+<div class="avgWrapper">
+    <p>
+        Tweets average per hour: <span id="totalAvg">0</span>
+    </p>
+    <p>
+        Detected males average per hour: <span id="malesAvg">0</span>
+    </p>
+    <p>
+        Detected females average per hour: <span id="femalesAvg">0</span>
+    </p>
+</div>
+
+<div class="imagesWrapper">
+
+    @foreach (var item in Model)
+            {
+        <div class="item">
+            <div class="tweetImage" style="background-image:url(@item.Url)">
+            </div>
+            
+            <div class="genderCount">
+                <span class="gender">
+                    male:  @item.MaleCount
+                </span>
+                <br />
+                <span class="gender">
+                    female:  @item.FemaleCount
+                </span>
+            </div>
+        </div>
+
+    }
+
+</div>
+
+@*<script>
+        var transportType = signalR.TransportType.WebSockets;
+        //can also be ServerSentEvents or LongPolling
+        var logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
+        var chatHub = new signalR.HttpConnection(`http://${document.location.host}/chat`, { transport: transportType, logger: logger });
+        var chatConnection = new signalR.HubConnection(chatHub, logger);
+
+        chatConnection.onClosed = e => {
+            console.log('connection closed');
+        };
+
+        chatConnection.onOpened = e => {
+            console.log('connection opened');
+        };
+
+        chatConnection.on('showNewDetectedImages', (images) => {
+
+            var imagesJson = $.parseJSON(images);
+            console.log(imagesJson);
+            console.log(new Date($.now()));
+
+            ;
+
+            for (var i = 0; i < imagesJson.length; i++) {
+                $(".imagesWrapper").prepend(
+                    '<div class="item">' +
+                    '<div class="tweetImage" style="background-image:url(' + imagesJson[i].Url + ')">' +
+                    '</div>' +
+
+                    '<div class="genderCount">' +
+                    '<span class="gender">' +
+                    'male:' + imagesJson[i].MaleCount +
+                    '</span>' +
+                    '<br />' +
+                    '<span class="gender">' +
+                    'female:' + imagesJson[i].FemaleCount +
+                    '</span>' +
+                    '</div>' +
+                    '</div>');
+
+               
+
+
+            }
+        });
+
+        chatConnection.start().catch(err => {
+            console.log('connection error');
+        });
+
+            checkForDataAverage();
+
+            function checkForDataAverage() {
+                setTimeout(checkForDataAverage, 10000);
+
+                $.ajax({
+                    url: '@Url.Action("RrunningAverage", "Home")',
+                    type: "GET",
+                    cache: false,
+                    success: function (result) {
+                        animateTonewValue('#totalAvg', result.totalTweetAverage);
+                        animateTonewValue('#malesAvg', result.malesAverage);
+                        animateTonewValue('#femalesAvg', result.femalesAverage);
+                    }
+
+                });
+            }
+
+            function animateTonewValue(el, value) {
+                var element = $(el).text();
+                console.log(value);
+                console.log(element);
+
+                jQuery({ someValue: parseInt(element) }).animate({ someValue: value }, {
+                    duration: 3000,
+                    easing: 'swing',
+                    step: function () {
+                        $(el).text(Math.ceil(this.someValue));
+                    }
+                });
+            }
+
+
+</script>*@
